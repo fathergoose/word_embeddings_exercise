@@ -1,0 +1,9 @@
+{
+  "name": "word_embeddings_exercise",
+  "version": "1.0.0",
+  "description": "learn about NLP and word similarities",
+  "main": "dest/index.js",
+  "author": "Alexander Ilseman <al@ilseman.com>",
+  "license": "MIT",
+  "private": false
+}
