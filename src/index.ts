@@ -3,6 +3,7 @@ import path from 'path';
 import readline from 'readline';
 import events from 'events';
 import compare from 'compute-cosine-similarity';
+import { cosineSimilarity } from './vector';
 import { fileURLToPath } from 'url';
 
 // First, we need to model the data
