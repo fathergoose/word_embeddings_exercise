@@ -2,16 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import events from 'events';
-//import compare from 'compute-cosine-similarity';
 import { cosineSimilarity } from './vector.js';
 import { fileURLToPath } from 'url';
-
-// First, we need to model the data
-// Ideally I would do something like this:
-// const lineIndex = [0, +bytes, +bytes, +bytes, ...]
-// const strings = { 'text-of-scored-string': lineNumber }
-// Then, I can quickly find any of the strings that are scored
-// while avoiding loading the entire score set into memory
+import termColors from './termColors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,12 +18,12 @@ async function getSubjectVector(subject: string) {
       crlfDelay: Infinity,
     });
 
-    rl.on('line', line => {
+    rl.on('line', (line) => {
       if (line.split(' ')[0] === subject) {
         subjectVector = line
           .split(' ')
           .slice(1)
-          .map(x => +x);
+          .map((x) => +x);
         rl.close();
       }
     });
@@ -45,7 +38,7 @@ async function getSubjectVector(subject: string) {
 async function getMostRelatedEntries(
   subject: string,
   subjectVector: number[],
-  nRelatedEntries: number = 10,
+  nRelatedEntries: number = 10
 ) {
   let similarityScores: Record<string, number>[] = [];
   try {
@@ -54,12 +47,12 @@ async function getMostRelatedEntries(
       crlfDelay: Infinity,
     });
 
-    rl.on('line', line => {
+    rl.on('line', (line) => {
       const text = line.split(' ')[0];
       const score = line
         .split(' ')
         .slice(1)
-        .map(x => +x);
+        .map((x) => +x);
 
       if (text !== subject) {
         similarityScores.push({
@@ -69,7 +62,7 @@ async function getMostRelatedEntries(
 
       if (similarityScores.length > nRelatedEntries) {
         const sortedScores = [...similarityScores].sort(
-          (a, b) => Object.values(b)[0] - Object.values(a)[0],
+          (a, b) => Object.values(b)[0] - Object.values(a)[0]
         );
         similarityScores = sortedScores.slice(0, nRelatedEntries);
       }
@@ -82,15 +75,49 @@ async function getMostRelatedEntries(
   }
 }
 
+function rightPadKeys(results: Record<string, number>[], padding: number = 4) {
+  let longestKey = 0;
+  results.forEach((result) => {
+    if (longestKey < Object.keys(result)[0].length) {
+      longestKey = Object.keys(result)[0].length;
+    }
+  });
+  const extraSpaces = longestKey + padding;
+  return results.map((result) => {
+    const key = Object.keys(result)[0];
+    return { [key.padEnd(extraSpaces)]: result[key] };
+  });
+}
+
+const tableWidth = 44;
 const subject = process.argv[2];
 const subjectVector = await getSubjectVector(subject);
 if (subjectVector) {
   const mostRelatedEntries = await getMostRelatedEntries(
     subject,
-    subjectVector,
+    subjectVector
   );
-  console.log(`Words most similar to ${subject}:`);
-  console.log(mostRelatedEntries);
+  const formattedEntries = rightPadKeys(mostRelatedEntries ?? []);
+  const formattedSubject = `"${subject}":`;
+  console.log(
+    `${termColors.bright}Words most similar to ${termColors.fg.red}${formattedSubject}${termColors.reset}`
+  );
+  console.log('—'.repeat(tableWidth));
+  console.log(
+    `| ${termColors.bright}Word${termColors.reset}              |  ${termColors.bright}Cosine Similarity${termColors.reset}   |`
+  );
+  console.log('—'.repeat(tableWidth));
+  formattedEntries.forEach((entry) => {
+    console.log(
+      '| ',
+      Object.keys(entry)[0],
+      '| ',
+      Object.values(entry)[0],
+      ' |'
+    );
+  });
+  console.log('—'.repeat(tableWidth));
+  console.log('\n');
 } else {
   console.error('Could not find subject vector');
 }
