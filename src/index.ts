@@ -81,7 +81,7 @@ async function getMostRelatedEntries(
   }
 }
 
-const subject = 'abuse';
+const subject = process.argv[2];
 const subjectVector = await getSubjectVector(subject);
 if (subjectVector) {
   const mostRelatedEntries = await getMostRelatedEntries(
