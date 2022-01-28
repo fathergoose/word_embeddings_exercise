@@ -2,8 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import events from 'events';
-import compare from 'compute-cosine-similarity';
-import { cosineSimilarity } from './vector';
+//import compare from 'compute-cosine-similarity';
+import { cosineSimilarity } from './vector.js';
 import { fileURLToPath } from 'url';
 
 // First, we need to model the data
@@ -63,7 +63,7 @@ async function getMostRelatedEntries(
 
       if (text !== subject) {
         similarityScores.push({
-          [text]: compare(score, subjectVector),
+          [text]: cosineSimilarity(score, subjectVector),
         });
       }
 

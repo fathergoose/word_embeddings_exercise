@@ -6,7 +6,7 @@ export function dotProduct(A: Vector, B: Vector) {
 
 export function magnitude(A: Vector, B: Vector) {
   const sumSquares = (acc: number, cur: number) => acc + cur ** 2;
-  return A.reduce(sumSquares) ** 0.5 * B.reduce(sumSquares) ** 0.5;
+  return A.reduce(sumSquares, 0) ** 0.5 * B.reduce(sumSquares, 0) ** 0.5;
 }
 
 export function cosineSimilarity(A: Vector, B: Vector) {
